@@ -25,19 +25,20 @@ def index():
 
 @app.route('/describe', methods=['POST'])
 def describe_image():
-    if 'image' not in request.files:
-        return jsonify({"error": "No image file provided"}), 400
+    if 'image' not in request.files or 'question' not in request.form:
+        return jsonify({"error": "Image and question are required"}), 400
 
     image_file = request.files['image']
+    question = request.form['question']
     image = Image.open(io.BytesIO(image_file.read()))
     
     # Encode image
     enc_image = model.encode_image(image).to(device)
     
-    # Generate answer
-    answer = model.answer_question(enc_image, "Describe this image.", tokenizer)
+    # Generate answer using the user's question
+    answer = model.answer_question(enc_image, question, tokenizer)
     
-    return jsonify({"description": answer}), 200
+    return jsonify({"description": answer})
 
 if __name__ == '__main__':
     # Set debug mode for development
